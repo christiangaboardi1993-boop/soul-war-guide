@@ -827,10 +827,13 @@
   }, {rootMargin:'-20% 0px -70% 0px'});
   sections.forEach(function(s){ io.observe(s); });
 
-  /* ---------------- Step checklist (localStorage, with optional cloud sync via Firebase) ---------------- */
+  /* ---------------- Step checklist (localStorage when signed out, Firestore when a character is active) ---------------- */
   var LS_KEY = 'soulwar-guide-progress';
-  var progress = {};
-  try{ progress = JSON.parse(localStorage.getItem(LS_KEY) || '{}'); }catch(e){ progress = {}; }
+  function readLocalProgress(){
+    try{ return JSON.parse(localStorage.getItem(LS_KEY) || '{}'); }catch(e){ return {}; }
+  }
+  var progress = readLocalProgress(); // whatever is currently shown/edited — swapped wholesale on login/logout
+  var usingCloud = false; // true while a Firebase character's progress is the active source of truth
   function applyProgressToCheckboxes(){
     document.querySelectorAll('.step-check').forEach(function(cb){
       cb.checked = !!progress[cb.dataset.step];
@@ -842,16 +845,25 @@
     cb.addEventListener('change', function(){
       var key = cb.dataset.step;
       progress[key] = cb.checked;
-      try{ localStorage.setItem(LS_KEY, JSON.stringify(progress)); }catch(e){}
-      if(window.TibiaHubCloudSync) window.TibiaHubCloudSync.save(key, cb.checked);
+      if(usingCloud){
+        if(window.TibiaHubCloudSync) window.TibiaHubCloudSync.save(key, cb.checked);
+      } else {
+        try{ localStorage.setItem(LS_KEY, JSON.stringify(progress)); }catch(e){}
+      }
     });
   });
-  // Called by the Firebase module script when the signed-in user switches (or first loads) a character —
-  // merges that character's cloud progress into the local checklist so the two stay in sync.
+  // Called by the Firebase module script. The two states are kept fully separate on purpose:
+  // signed-out progress lives only in this browser's localStorage, a signed-in character's progress
+  // lives only in Firestore — logging in/out swaps which one is displayed, never merges them.
   window.TibiaHubProgress = {
     applyRemote: function(remoteMap){
-      progress = Object.assign({}, progress, remoteMap || {});
-      try{ localStorage.setItem(LS_KEY, JSON.stringify(progress)); }catch(e){}
+      usingCloud = true;
+      progress = Object.assign({}, remoteMap || {});
+      applyProgressToCheckboxes();
+    },
+    revertToLocal: function(){
+      usingCloud = false;
+      progress = readLocalProgress();
       applyProgressToCheckboxes();
     }
   };
@@ -1506,6 +1518,7 @@
       signedInBox.hidden = true;
       currentCharId = null;
       charsCache = [];
+      if(window.TibiaHubProgress) window.TibiaHubProgress.revertToLocal();
     }
   });
 
