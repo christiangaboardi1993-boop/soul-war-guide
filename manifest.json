@@ -1,7 +1,7 @@
 {
-  "name": "Soul War — Diário do Abismo",
-  "short_name": "Soul War",
-  "description": "Guia interativo em português da Soul War Quest (Tibia), com mapas clicáveis e diálogo de NPC.",
+  "name": "TibiaHub",
+  "short_name": "TibiaHub",
+  "description": "Guias, criaturas, itens e lore de Tibia — feito por jogadores, para jogadores.",
   "start_url": "./index.html",
   "scope": "./",
   "id": "./",

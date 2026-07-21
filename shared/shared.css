@@ -1,0 +1,126 @@
+/* TibiaHub shared design system — tokens + base elements + a few components
+   reused across every page (topbar, account widget, chip, card, shell container).
+   Page-specific layout (hero, sidebar nav, quest components, etc.) stays in that page's own <style>. */
+
+:root{
+  --bg:#100c17; --bg-2:#18121f; --bg-3:#201929; --line:rgba(233,226,240,.10);
+  --text:#ece6f2; --text-dim:#b6a9cb; --text-faint:#7d7095;
+  --accent:#49d9c2; --accent-strong:#8bf3e0; --accent-ink:#06231e;
+  --accent-2:#a37bf0; --accent-2-strong:#c7aeff;
+  --danger:#e0576b; --danger-strong:#ff8a97;
+  --gold:#e3c481; --gold-strong:#f3dca4;
+  --shadow:rgba(0,0,0,.5);
+  --font-display:"Cambria","Constantia","Iowan Old Style","Palatino Linotype",Georgia,serif;
+  --font-body:"Segoe UI",-apple-system,BlinkMacSystemFont,"Helvetica Neue",Arial,sans-serif;
+  --font-mono:"Cascadia Code","SF Mono",ui-monospace,Consolas,"Courier New",monospace;
+  color-scheme: dark;
+}
+@media (prefers-color-scheme: light){
+  :root{
+    --bg:#f3ede0; --bg-2:#fffdf8; --bg-3:#ece2cb; --line:rgba(40,30,20,.14);
+    --text:#271f30; --text-dim:#5b5268; --text-faint:#847a90;
+    --accent:#0c8f78; --accent-strong:#086b5c; --accent-ink:#eafaf6;
+    --accent-2:#6a45b0; --accent-2-strong:#4f3186;
+    --danger:#b3374b; --danger-strong:#8a2438;
+    --gold:#8a6a1f; --gold-strong:#6b5116;
+    --shadow:rgba(60,40,20,.16);
+    color-scheme: light;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#100c17; --bg-2:#18121f; --bg-3:#201929; --line:rgba(233,226,240,.10);
+  --text:#ece6f2; --text-dim:#b6a9cb; --text-faint:#7d7095;
+  --accent:#49d9c2; --accent-strong:#8bf3e0; --accent-ink:#06231e;
+  --accent-2:#a37bf0; --accent-2-strong:#c7aeff;
+  --danger:#e0576b; --danger-strong:#ff8a97;
+  --gold:#e3c481; --gold-strong:#f3dca4;
+  --shadow:rgba(0,0,0,.5);
+  color-scheme: dark;
+}
+:root[data-theme="light"]{
+  --bg:#f3ede0; --bg-2:#fffdf8; --bg-3:#ece2cb; --line:rgba(40,30,20,.14);
+  --text:#271f30; --text-dim:#5b5268; --text-faint:#847a90;
+  --accent:#0c8f78; --accent-strong:#086b5c; --accent-ink:#eafaf6;
+  --accent-2:#6a45b0; --accent-2-strong:#4f3186;
+  --danger:#b3374b; --danger-strong:#8a2438;
+  --gold:#8a6a1f; --gold-strong:#6b5116;
+  --shadow:rgba(60,40,20,.16);
+  color-scheme: light;
+}
+
+/* ---------- Base ---------- */
+*{box-sizing:border-box;}
+html,body{margin:0;padding:0;}
+body{
+  background:
+    radial-gradient(1200px 600px at 15% -10%, color-mix(in srgb, var(--accent-2) 14%, transparent), transparent 60%),
+    radial-gradient(1000px 700px at 100% 0%, color-mix(in srgb, var(--accent) 10%, transparent), transparent 55%),
+    var(--bg);
+  color:var(--text);
+  font-family:var(--font-body);
+  line-height:1.6;
+  font-size:16px;
+}
+h1,h2,h3,h4{font-family:var(--font-display); text-wrap:balance; margin:0 0 .4em;}
+a{color:var(--accent-strong);}
+p{margin:0 0 1em; max-width:65ch;}
+::selection{background:color-mix(in srgb, var(--accent) 35%, transparent);}
+.mono{font-family:var(--font-mono); font-variant-numeric:tabular-nums;}
+.visually-hidden{position:absolute; width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);}
+:focus-visible{outline:2px solid var(--accent-strong); outline-offset:2px; border-radius:4px;}
+@media (prefers-reduced-motion: reduce){ *{animation-duration:.001ms !important; transition-duration:.001ms !important;} }
+
+.shell{max-width:1180px; margin:0 auto; padding:0 20px 120px;}
+
+/* ---------- Topbar ---------- */
+.topbar{
+  position:sticky; top:0; z-index:40; display:flex; align-items:center; gap:12px;
+  padding:10px 20px; background:color-mix(in srgb, var(--bg) 88%, transparent);
+  backdrop-filter:blur(8px); border-bottom:1px solid var(--line);
+}
+.topbar .brand{font-family:var(--font-display); font-size:1.05rem; letter-spacing:.02em; text-decoration:none; color:var(--text);}
+.topbar .brand em{font-style:normal; color:var(--accent-strong);}
+.topbar-spacer{flex:1;}
+.toc-toggle{display:none;}
+.theme-note{font-size:.78rem; color:var(--text-faint);}
+
+/* ---------- Account widget (Firebase login + character switcher) ---------- */
+.account-widget{display:flex; align-items:center;}
+.account-btn{
+  background:var(--accent); color:var(--accent-ink); border:none; border-radius:8px; padding:7px 14px;
+  font-size:.82rem; font-weight:600; cursor:pointer; white-space:nowrap;
+}
+.account-btn:hover{background:var(--accent-strong);}
+.account-signed-in:not([hidden]){display:flex; align-items:center; gap:7px;}
+.account-avatar{border-radius:50%; display:block; background:var(--bg-3);}
+.account-char-select{
+  background:var(--bg-2); color:var(--text); border:1px solid var(--line); border-radius:7px;
+  padding:5px 8px; font-size:.8rem; max-width:120px;
+}
+.account-icon-btn{
+  width:28px; height:28px; border-radius:7px; background:var(--bg-2); border:1px solid var(--line);
+  color:var(--text-dim); font-size:.85rem; cursor:pointer; display:flex; align-items:center; justify-content:center; padding:0;
+}
+.account-icon-btn:hover{background:color-mix(in srgb, var(--accent) 16%, var(--bg-2)); color:var(--text);}
+@media (max-width:640px){
+  .account-char-select{max-width:74px;}
+  .topbar .brand{display:none;}
+}
+
+/* ---------- Generic components ---------- */
+.chip{
+  display:inline-flex; align-items:center; gap:6px; padding:6px 12px; border-radius:999px;
+  background:var(--bg-2); border:1px solid var(--line); font-size:.8rem; color:var(--text-dim);
+}
+.chip b{color:var(--text); font-weight:600;}
+.chip.gold{border-color:color-mix(in srgb, var(--gold) 45%, var(--line));}
+.chip.danger{border-color:color-mix(in srgb, var(--danger) 45%, var(--line));}
+
+.card{
+  background:var(--bg-2); border:1px solid var(--line); border-radius:14px; padding:22px 24px; margin:18px 0;
+  box-shadow:0 10px 30px -20px var(--shadow);
+}
+.card h3{font-size:1.15rem;}
+
+footer.page-footer{padding:40px 0 10px; color:var(--text-faint); font-size:.78rem; border-top:1px solid var(--line); margin-top:20px;}
+footer.page-footer a{color:var(--text-dim);}

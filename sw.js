@@ -1,5 +1,5 @@
 // Bump this on every deploy that changes cached files, to invalidate old caches.
-const CACHE = 'soul-war-guide-v7';
+const CACHE = 'tibiahub-v8';
 const ASSETS = [
   './',
   './index.html',
@@ -7,6 +7,9 @@ const ASSETS = [
   './icons/icon-192.png',
   './icons/icon-512.png',
   './icons/icon-maskable-512.png',
+  './shared/shared.css',
+  './shared/account.js',
+  './quests/soul-war-quest/',
   './vendor/leaflet/leaflet.js',
   './vendor/leaflet/leaflet.css'
 ];
