@@ -20,7 +20,7 @@
   /* Tokens, base elements, topbar and account-widget now live in shared/shared.css. */
 
   .layout{display:grid; grid-template-columns:250px minmax(0,1fr); gap:40px; margin-top:32px;}
-  @media (max-width:920px){ .layout{grid-template-columns:1fr;} }
+  @media (max-width:920px){ .layout{grid-template-columns:minmax(0,1fr);} }
 
   /* ---------- Sidebar stepper ---------- */
   .stepper-wrap{position:sticky; top:64px; align-self:start; max-height:calc(100vh - 90px); overflow:auto; padding-right:6px;}
@@ -263,20 +263,27 @@
 
 <div class="toc-scrim" id="tocScrim"></div>
 
-<div class="topbar">
-  <button class="toc-toggle" id="tocToggle" aria-expanded="false" aria-controls="stepperWrap">☰ Sumário</button>
-  <span class="brand">Soul War · <em>Diário do Abismo</em></span>
-  <span class="topbar-spacer"></span>
-  <div class="account-widget">
-    <button class="account-btn" id="loginBtn" type="button">Entrar com Google</button>
-    <div class="account-signed-in" id="accountSignedIn" hidden>
-      <img class="account-avatar" id="accountAvatar" alt="" width="22" height="22">
-      <select class="account-char-select" id="charSelect" title="Personagem ativo" aria-label="Personagem ativo"></select>
-      <button class="account-icon-btn" id="addCharBtn" type="button" title="Novo personagem">+</button>
-      <button class="account-icon-btn" id="signOutBtn" type="button" title="Sair">⏻</button>
+<header class="topbar">
+  <div class="topbar-inner">
+    <a class="brand" href="../../index.html">
+      <span class="brand-mark" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 2 21 7v10l-9 5-9-5V7z"/><path d="M12 2v20M3 7l9 5 9-5M3 17l9-5 9 5"/></svg>
+      </span>
+      <span class="brand-name">Tibia<em>Hub</em></span>
+    </a>
+    <button class="toc-toggle" id="tocToggle" aria-expanded="false" aria-controls="stepperWrap">☰ <span class="toc-label">Sumário</span></button>
+    <span class="topbar-spacer"></span>
+    <div class="account-widget">
+      <button class="account-btn" id="loginBtn" type="button">Entrar com Google</button>
+      <div class="account-signed-in" id="accountSignedIn" hidden>
+        <img class="account-avatar" id="accountAvatar" alt="" width="22" height="22">
+        <select class="account-char-select" id="charSelect" title="Personagem ativo" aria-label="Personagem ativo"></select>
+        <button class="account-icon-btn" id="addCharBtn" type="button" title="Novo personagem">+</button>
+        <button class="account-icon-btn" id="signOutBtn" type="button" title="Sair">⏻</button>
+      </div>
     </div>
   </div>
-</div>
+</header>
 
 <div class="shell">
   <header class="hero">
@@ -1288,6 +1295,7 @@
   }
 </script>
 
+<script src="../../shared/header.js"></script>
 <script>window.TIBIAHUB_PAGE_ID = 'soulwar';</script>
 <script type="module" src="../../shared/account.js"></script>
 </body>
