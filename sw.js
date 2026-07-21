@@ -1,12 +1,14 @@
 // Bump this on every deploy that changes cached files, to invalidate old caches.
-const CACHE = 'soul-war-guide-v3';
+const CACHE = 'soul-war-guide-v4';
 const ASSETS = [
   './',
   './index.html',
   './manifest.json',
   './icons/icon-192.png',
   './icons/icon-512.png',
-  './icons/icon-maskable-512.png'
+  './icons/icon-maskable-512.png',
+  './vendor/leaflet/leaflet.js',
+  './vendor/leaflet/leaflet.css'
 ];
 
 self.addEventListener('install', function(event){

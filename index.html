@@ -8,6 +8,7 @@
 <meta name="theme-color" content="#100c17" media="(prefers-color-scheme: dark)">
 <meta name="theme-color" content="#f3ede0" media="(prefers-color-scheme: light)">
 <link rel="manifest" href="manifest.json">
+<link rel="stylesheet" href="vendor/leaflet/leaflet.css">
 <link rel="icon" href="icons/icon-192.png" type="image/png">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -238,17 +239,33 @@
   .modal-sub{color:var(--text-faint); font-size:.85rem; margin-bottom:14px;}
   .map-canvas-wrap{background:var(--bg-3); border-radius:12px; overflow:hidden; border:1px solid var(--line);}
   .map-canvas-wrap canvas{width:100%; height:280px; display:block;}
-  .real-map-wrap{position:relative; border-radius:12px; overflow:hidden; border:1px solid var(--line); height:280px; background:#000; margin-bottom:10px;}
-  .real-map-view{position:absolute; inset:0; overflow:hidden;}
-  .real-map-attrib{position:absolute; right:6px; bottom:5px; font-size:.62rem; color:rgba(255,255,255,.6); background:rgba(0,0,0,.45); padding:2px 7px; border-radius:4px; z-index:5;}
-  .real-map-marker{
-    position:absolute; width:12px; height:12px; margin:-6px 0 0 -6px; padding:0; border:none; cursor:pointer;
-    background:var(--accent); transform:rotate(45deg); box-shadow:0 0 0 2px rgba(0,0,0,.55), 0 0 10px 1px var(--accent); z-index:4;
+  .real-map-wrap{position:relative; border-radius:12px; overflow:hidden; border:1px solid var(--line); height:320px; background:#000; margin-bottom:10px;}
+  .real-map-view{position:absolute; inset:0; overflow:hidden; background:#000;}
+  .real-map-view .leaflet-container{background:#000; font-family:var(--font-body); outline:none;}
+  .real-map-attrib{position:absolute; right:6px; bottom:5px; font-size:.62rem; color:rgba(255,255,255,.6); background:rgba(0,0,0,.45); padding:2px 7px; border-radius:4px; z-index:600; pointer-events:none;}
+
+  /* custom Leaflet marker + floor control, styled to match the rest of the guide */
+  .q-pin{
+    position:absolute; width:14px; height:14px; margin:-7px 0 0 -7px; border:none; cursor:pointer;
+    background:var(--accent); transform:rotate(45deg); box-shadow:0 0 0 2px rgba(0,0,0,.6), 0 0 10px 1px var(--accent);
   }
-  .real-map-marker.boss{background:var(--danger); box-shadow:0 0 0 2px rgba(0,0,0,.55), 0 0 10px 1px var(--danger);}
-  .real-map-marker.active{width:17px; height:17px; margin:-8.5px 0 0 -8.5px; box-shadow:0 0 0 2px rgba(0,0,0,.6), 0 0 16px 4px var(--accent-strong);}
-  .real-map-marker.active.boss{box-shadow:0 0 0 2px rgba(0,0,0,.6), 0 0 16px 4px var(--danger-strong);}
-  .real-map-label{position:absolute; transform:translateX(-50%); font-size:.68rem; color:#fff; background:rgba(0,0,0,.6); padding:2px 8px; border-radius:4px; white-space:nowrap; z-index:4; pointer-events:none;}
+  .q-pin.boss{background:var(--danger); box-shadow:0 0 0 2px rgba(0,0,0,.6), 0 0 10px 1px var(--danger);}
+  .q-pin.active{width:19px; height:19px; margin:-9.5px 0 0 -9.5px; box-shadow:0 0 0 2px rgba(0,0,0,.65), 0 0 18px 4px var(--accent-strong);}
+  .q-pin.active.boss{box-shadow:0 0 0 2px rgba(0,0,0,.65), 0 0 18px 4px var(--danger-strong);}
+  .q-pin-label{
+    position:absolute; top:26px; left:50%; transform:translateX(-50%); font-size:.68rem; color:#fff;
+    background:rgba(0,0,0,.65); padding:1px 8px; border-radius:4px; white-space:nowrap; pointer-events:none;
+  }
+  .map-floor-ctrl{background:var(--bg-2); border:1px solid var(--line); border-radius:8px; overflow:hidden; box-shadow:0 6px 18px rgba(0,0,0,.4);}
+  .map-floor-ctrl button{display:block; width:30px; height:26px; background:none; border:none; color:var(--text); font-size:.8rem; cursor:pointer; padding:0;}
+  .map-floor-ctrl button:hover{background:color-mix(in srgb, var(--accent) 18%, transparent);}
+  .map-floor-ctrl .floor-readout{
+    text-align:center; font-family:var(--font-mono); font-size:.66rem; color:var(--text-dim); padding:3px 0;
+    border-top:1px solid var(--line); border-bottom:1px solid var(--line);
+  }
+  .leaflet-control-zoom{border:1px solid var(--line) !important; box-shadow:0 6px 18px rgba(0,0,0,.4) !important;}
+  .leaflet-control-zoom a{background:var(--bg-2) !important; color:var(--text) !important; border-color:var(--line) !important;}
+  .leaflet-control-zoom a:hover{background:color-mix(in srgb, var(--accent) 18%, var(--bg-2)) !important;}
   .modal-grid{display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:14px;}
   @media (max-width:520px){.modal-grid{grid-template-columns:1fr;}}
   .coord-box{
@@ -721,6 +738,7 @@
 
       <footer class="page-footer">
         <p>Guia-teste construído a partir de informações públicas da <a href="https://www.tibiawiki.com.br/wiki/Soul_War_Quest" target="_blank" rel="noopener noreferrer">TibiaWiki (tibiawiki.com.br)</a>, reescrito, reorganizado e com mapas próprios como experimento de formato — nomes de criaturas, itens e coordenadas são dados de jogo citados para fins de referência. Tibia é marca registrada da CipSoft GmbH; este material não tem qualquer vínculo oficial.</p>
+        <p>Mapas em tempo real: imagens do minimapa por <a href="https://tibiamaps.io/" target="_blank" rel="noopener noreferrer">tibiamaps.io</a> / <a href="https://github.com/tibiamaps/tibia-map-data" target="_blank" rel="noopener noreferrer">tibia-map-data</a> (licença MIT). Visualizador de mapa com <a href="https://leafletjs.com/" target="_blank" rel="noopener noreferrer">Leaflet</a> (licença BSD-2-Clause).</p>
       </footer>
     </main>
   </div>
@@ -739,7 +757,7 @@
     </div>
     <div class="real-map-wrap" id="realMapWrap" style="display:none;">
       <div class="real-map-view" id="realMapView"></div>
-      <div class="real-map-attrib">mapa real: tibiamaps.io / tibia-map-data (MIT)</div>
+      <div class="real-map-attrib">mapa: tibiamaps.io (MIT) · Leaflet</div>
     </div>
     <div class="map-canvas-wrap" id="canvasWrap"><canvas id="modalCanvas" width="640" height="280"></canvas></div>
     <div class="floor-tabs" id="modalFloors"></div>
@@ -749,6 +767,7 @@
   </div>
 </div>
 
+<script src="vendor/leaflet/leaflet.js"></script>
 <script>
 (function(){
   "use strict";
@@ -1003,67 +1022,114 @@
     return 'https://tibiamaps.github.io/tibia-map-data/mapper/Minimap_Color_' + tx + '_' + ty + '_' + z + '.png';
   }
 
-  function renderRealMap(container, points, activeKey, onPick){
-    var TILE = 256, zoom = 2.2;
-    var active = points.find(function(p){ return p.key === activeKey; }) || points[0];
-    var gridOriginX = Math.floor(active.x / TILE) * TILE - TILE;
-    var gridOriginY = Math.floor(active.y / TILE) * TILE - TILE;
-    container.innerHTML = '';
-
-    var wrapper = document.createElement('div');
-    wrapper.style.cssText = 'position:absolute;left:0;top:0;width:' + (TILE*3) + 'px;height:' + (TILE*3) + 'px;image-rendering:pixelated;';
-
-    // Only the center tile (row 1, col 1) actually contains our point — if that one fails
-    // (network blocked, e.g. inside the Claude Artifact sandbox) fall back to the stylized diagram.
-    // Neighbor tiles can legitimately be missing (map edge / unexplored void) — just hide those quietly.
-    for(var row=0; row<3; row++){
-      for(var col=0; col<3; col++){
-        var tx = gridOriginX + col*TILE, ty = gridOriginY + row*TILE;
-        var isCenter = (row===1 && col===1);
-        var img = new Image();
-        img.width = TILE; img.height = TILE;
-        img.style.cssText = 'position:absolute; left:' + (col*TILE) + 'px; top:' + (row*TILE) + 'px; image-rendering:pixelated;';
-        img.alt = '';
-        (function(img, isCenter){
-          img.onerror = function(){
-            if(isCenter){
-              realMapWrap.style.display = 'none';
-              canvasWrap.style.display = '';
-              renderModalCanvas(currentModalKey, activeKey);
-            } else {
-              img.style.visibility = 'hidden';
-            }
-          };
-        })(img, isCenter);
-        img.src = realTileUrl(tx, ty, active.z);
-        wrapper.appendChild(img);
-      }
+  // Leaflet tile layer that maps straight onto the tibiamaps.io minimap file naming
+  // (Minimap_Color_{worldX}_{worldY}_{floor}.png, one 256x256 png per world-coordinate block).
+  var GameTileLayer = L.TileLayer.extend({
+    initialize: function(floor, options){
+      this._floor = floor;
+      L.TileLayer.prototype.initialize.call(this, '', options);
+    },
+    getTileUrl: function(coords){
+      return realTileUrl(coords.x * 256, coords.y * 256, this._floor);
     }
-    container.appendChild(wrapper);
+  });
 
-    var viewW = container.clientWidth || 640, viewH = container.clientHeight || 280;
-    wrapper.style.transformOrigin = '0 0';
-    wrapper.style.transform = 'translate(' + (viewW/2 - (active.x - gridOriginX)*zoom) + 'px,' + (viewH/2 - (active.y - gridOriginY)*zoom) + 'px) scale(' + zoom + ')';
+  // World (x,y) -> Leaflet latlng, using CRS.Simple with y flipped so "up" on screen matches
+  // lower Tibia Y (north), keeping 1 world sqm == 1 map pixel at native zoom.
+  function toLatLng(x, y){ return L.latLng(-y, x); }
+
+  var leafletMap = null, leafletMarkers = [];
+  function destroyLeafletMap(){
+    if(leafletMap){ leafletMap.remove(); leafletMap = null; }
+    leafletMarkers = [];
+  }
+
+  function refreshMarkersForFloor(floor){
+    leafletMarkers.forEach(function(entry){
+      var show = entry.z === floor;
+      if(show && !leafletMap.hasLayer(entry.marker)) entry.marker.addTo(leafletMap);
+      if(!show && leafletMap.hasLayer(entry.marker)) leafletMap.removeLayer(entry.marker);
+    });
+  }
+
+  function buildLeafletMap(container, points, activeKey, onPick){
+    destroyLeafletMap();
+    container.innerHTML = '';
+    var active = points.find(function(p){ return p.key === activeKey; }) || points[0];
+
+    var map = L.map(container, {
+      crs: L.CRS.Simple,
+      minZoom: -2,
+      maxZoom: 3,
+      zoomSnap: 0.5,
+      zoomControl: false,
+      attributionControl: false
+    });
+    leafletMap = map;
+
+    var BLANK_TILE = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=';
+    var tileLayer = new GameTileLayer(active.z, { tileSize: 256, minNativeZoom: 0, maxNativeZoom: 0, noWrap: true, errorTileUrl: BLANK_TILE });
+    var wantX = Math.floor(active.x / 256), wantY = Math.floor(active.y / 256);
+    tileLayer.on('tileerror', function(e){
+      // Only treat this as "the map source is unreachable" (e.g. blocked by the Claude Artifact
+      // sandbox's CSP) when it's the tile for the point's own confirmed floor. Once the visitor
+      // manually browses to a different floor with the ▲/▼ control, a missing tile there just
+      // means that spot has no minimap data yet — that's normal, not a failure worth falling back for.
+      if(tileLayer._floor !== active.z) return;
+      if(e.coords && e.coords.z === 0 && e.coords.x === wantX && e.coords.y === wantY){
+        destroyLeafletMap();
+        realMapWrap.style.display = 'none';
+        canvasWrap.style.display = '';
+        renderModalCanvas(currentModalKey, activeKey);
+      }
+    });
+    tileLayer.addTo(map);
+
+    L.control.zoom({ position: 'topright' }).addTo(map);
+
+    var floorReadout;
+    var FloorControl = L.Control.extend({
+      options: { position: 'topleft' },
+      onAdd: function(){
+        var div = L.DomUtil.create('div', 'map-floor-ctrl');
+        L.DomEvent.disableClickPropagation(div);
+        var up = L.DomUtil.create('button', '', div);
+        up.type = 'button'; up.textContent = '▲'; up.title = 'Andar acima';
+        floorReadout = L.DomUtil.create('div', 'floor-readout', div);
+        floorReadout.textContent = 'z' + tileLayer._floor;
+        var down = L.DomUtil.create('button', '', div);
+        down.type = 'button'; down.textContent = '▼'; down.title = 'Andar abaixo';
+        L.DomEvent.on(up, 'click', function(){
+          tileLayer._floor = Math.max(0, tileLayer._floor - 1);
+          floorReadout.textContent = 'z' + tileLayer._floor;
+          tileLayer.redraw();
+          refreshMarkersForFloor(tileLayer._floor);
+        });
+        L.DomEvent.on(down, 'click', function(){
+          tileLayer._floor = Math.min(15, tileLayer._floor + 1);
+          floorReadout.textContent = 'z' + tileLayer._floor;
+          tileLayer.redraw();
+          refreshMarkersForFloor(tileLayer._floor);
+        });
+        return div;
+      }
+    });
+    new FloorControl().addTo(map);
+
+    map.setView(toLatLng(active.x, active.y), 1);
 
     points.forEach(function(p){
-      if(p.z !== active.z) return; // different floor than the one currently shown — don't plot a misleading marker
       var isActive = p.key === activeKey;
-      var px = viewW/2 + (p.x - active.x)*zoom;
-      var py = viewH/2 + (p.y - active.y)*zoom;
-      var marker = document.createElement('button');
-      marker.type = 'button';
-      marker.className = 'real-map-marker' + (p.boss ? ' boss' : '') + (isActive ? ' active' : '');
-      marker.style.left = px + 'px'; marker.style.top = py + 'px';
-      marker.title = p.label;
-      marker.setAttribute('aria-label', p.label);
-      if(onPick) marker.addEventListener('click', function(){ onPick(p.key); });
-      container.appendChild(marker);
-      var lbl = document.createElement('div');
-      lbl.className = 'real-map-label';
-      lbl.style.left = px + 'px'; lbl.style.top = (py + 12) + 'px';
-      lbl.style.opacity = isActive ? '1' : '.65';
-      lbl.textContent = p.label;
-      container.appendChild(lbl);
+      var icon = L.divIcon({
+        className: '',
+        html: '<div class="q-pin' + (p.boss ? ' boss' : '') + (isActive ? ' active' : '') + '"></div>' +
+              '<div class="q-pin-label">' + p.label + '</div>',
+        iconSize: [0, 0], iconAnchor: [0, 0]
+      });
+      var marker = L.marker(toLatLng(p.x, p.y), { icon: icon, keyboard: false });
+      if(onPick) marker.on('click', function(){ onPick(p.key); });
+      leafletMarkers.push({ marker: marker, z: p.z });
+      if(p.z === active.z) marker.addTo(map);
     });
   }
 
@@ -1124,10 +1190,15 @@
     realMapWrap.style.display = hasRealMap ? '' : 'none';
     canvasWrap.style.display = hasRealMap ? 'none' : '';
 
+    // Show the modal before building the Leaflet map — the map container must have real
+    // dimensions (not display:none) when L.map() initializes, or it mis-measures its viewport.
+    scrim.classList.add('show');
+    document.body.style.overflow='hidden';
+
     if(loc.kind==='cluster'){
       var selectWastelandPoint = function(pointKey){
         modalLegend.querySelectorAll('button').forEach(function(x){ x.classList.toggle('active', x.dataset.key===pointKey); });
-        renderRealMap(realMapView, WASTELAND_POINTS, pointKey, selectWastelandPoint);
+        buildLeafletMap(realMapView, WASTELAND_POINTS, pointKey, selectWastelandPoint);
         var pointLoc = LOC[pointKey];
         if(pointLoc){
           modalTitle.textContent = pointLoc.label;
@@ -1151,7 +1222,7 @@
       selectWastelandPoint(key);
     } else if(loc.coords){
       buildCoordBox(modalCoords, 'Coordenadas', loc.coords);
-      renderRealMap(realMapView, [{key:key, label:loc.label, x:loc.coords[0], y:loc.coords[1], z:loc.coords[2]}], key, null);
+      buildLeafletMap(realMapView, [{key:key, label:loc.label, x:loc.coords[0], y:loc.coords[1], z:loc.coords[2]}], key, null);
     } else {
       var note = document.createElement('div'); note.className='coord-box';
       note.innerHTML = '<span class="mono">Este ponto não tem coordenadas públicas confirmadas — o diagrama acima é apenas ilustrativo.</span>';
@@ -1170,14 +1241,13 @@
       });
     }
 
-    scrim.classList.add('show');
-    document.body.style.overflow='hidden';
     document.getElementById('modalClose').focus();
   }
 
   function closeModal(){
     scrim.classList.remove('show');
     document.body.style.overflow='';
+    destroyLeafletMap();
     if(lastFocused) lastFocused.focus();
   }
 
