@@ -915,22 +915,22 @@
   }
 
   var LOC = {
-    zarganash:   {label:'Portal de Zarganash', kind:'sigil', floor:'7', desc:'Fresta na realidade encontrada nas ruínas profundas de Zarganash — atravesse-a para chegar ao encontro com Flickering Soul.'},
-    inferno:     {label:'Claustrophobic Inferno', kind:'sigil', floor:'8', desc:'Sequência de 3 raids cronometradas, seguida da sala de Goshnar’s Malice.'},
-    mirror:      {label:'Mirrored Nightmare', kind:'sigil', floor:'8', desc:'Arena de espelhos onde nascem as aparições; a sala de Goshnar’s Greed fica ao final.'},
-    ebb:         {label:'Ebb and Flow', kind:'sigil', floor:'9', desc:'Caverna afetada pela maré, com andar superior acessível só durante a inundação.'},
+    zarganash:   {label:'Portal de Zarganash', kind:'sigil', floor:'10', coords:[33567,31538,10], desc:'Fresta na realidade encontrada nas ruínas profundas de Zarganash — atravesse-a para chegar ao encontro com Flickering Soul.'},
+    inferno:     {label:'Claustrophobic Inferno', kind:'sigil', floor:null, desc:'Sequência de 3 raids cronometradas, seguida da sala de Goshnar’s Malice.'},
+    mirror:      {label:'Mirrored Nightmare', kind:'sigil', floor:null, desc:'Arena de espelhos onde nascem as aparições; a sala de Goshnar’s Greed fica ao final.'},
+    ebb:         {label:'Ebb and Flow', kind:'sigil', floor:null, desc:'Caverna afetada pela maré, com andar superior acessível só durante a inundação.'},
     ebbRaft:     {label:'Balsa · Ebb and Flow', kind:'point', floor:'9', coords:[33939,31110,9], desc:'Ponto de embarque recomendado: espere a maré baixar por ~1min30 antes de correr até aqui.'},
-    crater:      {label:'Furious Crater', kind:'sigil', floor:'10-12', desc:'Cratera com 3 andares descendentes, cada um exigindo mais Pulsating Energy.'},
-    crater1:     {label:'Furious Crater · 1º andar', kind:'sigil', floor:'10', desc:'Colete 40 Pulsating Energy por jogador para liberar a descida.'},
-    crater2:     {label:'Furious Crater · 2º andar', kind:'sigil', floor:'11', desc:'Colete 55 Pulsating Energy por jogador para liberar a descida.'},
-    crater3:     {label:'Furious Crater · 3º andar', kind:'sigil', floor:'12', desc:'Colete 70 Pulsating Energy por jogador para acessar a sala de Goshnar’s Cruelty.'},
+    crater:      {label:'Furious Crater', kind:'sigil', floor:null, desc:'Cratera com 3 andares descendentes, cada um exigindo mais Pulsating Energy.'},
+    crater1:     {label:'Furious Crater · 1º andar', kind:'sigil', floor:null, desc:'Colete 40 Pulsating Energy por jogador para liberar a descida.'},
+    crater2:     {label:'Furious Crater · 2º andar', kind:'sigil', floor:null, desc:'Colete 55 Pulsating Energy por jogador para liberar a descida.'},
+    crater3:     {label:'Furious Crater · 3º andar', kind:'sigil', floor:null, desc:'Colete 70 Pulsating Energy por jogador para acessar a sala de Goshnar’s Cruelty.'},
     wastelandHall:{label:'Rotten Wasteland · Hall', kind:'cluster', floor:'13', desc:'Ponto central do covil — visite os quatro santuários em qualquer ordem antes de descer até o boss.'},
     shrineBlue:  {label:'Santuário Azul', kind:'cluster', floor:'13', coords:[33927,31091,13], desc:'Um dos quatro altares que precisam ser ativados em Rotten Wasteland.'},
     shrineOrange:{label:'Santuário Laranja', kind:'cluster', floor:'13', coords:[33970,30988,13], desc:'Um dos quatro altares que precisam ser ativados em Rotten Wasteland.'},
     shrinePink:  {label:'Santuário Rosa', kind:'cluster', floor:'13', coords:[33971,31012,13], desc:'Um dos quatro altares que precisam ser ativados em Rotten Wasteland.'},
     shrineGreen: {label:'Santuário Verde', kind:'cluster', floor:'13', coords:[33963,31078,13], desc:'Um dos quatro altares que precisam ser ativados em Rotten Wasteland.'},
     hatredRoom:  {label:'Sala de Goshnar’s Hatred', kind:'cluster', floor:'12', coords:[33914,31034,12], boss:true, desc:'Um andar abaixo do Hall — o portal só abre depois dos quatro santuários ativados.'},
-    megalomania: {label:'Arena de Goshnar’s Megalomania', kind:'sigil', floor:'7', desc:'Atrás do Magic Forcefield à esquerda do hub inicial. Libera só após os cinco bosses de acesso.'}
+    megalomania: {label:'Arena de Goshnar’s Megalomania', kind:'sigil', floor:null, desc:'Atrás do Magic Forcefield à esquerda do hub inicial. Libera só após os cinco bosses de acesso.'}
   };
 
   var WASTELAND_POINTS = [
@@ -967,7 +967,7 @@
       pin.addEventListener('mouseenter', function(){
         var key = pin.dataset.loc; var loc = LOC[key]; if(!loc) return;
         renderMini(key);
-        ttTitle.textContent = loc.label + ' · andar ' + loc.floor;
+        ttTitle.textContent = loc.label + (loc.floor ? (' · andar ' + loc.floor) : '');
         ttCoords.textContent = loc.coords ? coordStr(loc.coords) : 'diagrama estilizado';
         tooltip.classList.add('show');
       });
@@ -1116,7 +1116,7 @@
     modalTitle.textContent = loc.label;
     var hasRealMap = (loc.kind==='cluster') || !!loc.coords;
     var subNote = loc.kind==='cluster' ? ' · mapa real em escala, coordenadas oficiais' : (loc.coords ? ' · mapa real, coordenadas oficiais' : ' · diagrama estilizado (sem coordenadas oficiais)');
-    modalSub.textContent = 'Andar ' + loc.floor + subNote;
+    modalSub.textContent = (loc.floor ? ('Andar ' + loc.floor) : 'Andar não confirmado') + subNote;
     modalDesc.textContent = loc.desc;
     modalLegend.innerHTML = '';
     modalCoords.innerHTML = '';
