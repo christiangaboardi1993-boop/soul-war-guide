@@ -1,5 +1,5 @@
 // Bump this on every deploy that changes cached files, to invalidate old caches.
-const CACHE = 'soul-war-guide-v1';
+const CACHE = 'soul-war-guide-v2';
 const ASSETS = [
   './',
   './index.html',

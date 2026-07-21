@@ -238,6 +238,17 @@
   .modal-sub{color:var(--text-faint); font-size:.85rem; margin-bottom:14px;}
   .map-canvas-wrap{background:var(--bg-3); border-radius:12px; overflow:hidden; border:1px solid var(--line);}
   .map-canvas-wrap canvas{width:100%; height:280px; display:block;}
+  .real-map-wrap{position:relative; border-radius:12px; overflow:hidden; border:1px solid var(--line); height:280px; background:#000; margin-bottom:10px;}
+  .real-map-view{position:absolute; inset:0; overflow:hidden;}
+  .real-map-attrib{position:absolute; right:6px; bottom:5px; font-size:.62rem; color:rgba(255,255,255,.6); background:rgba(0,0,0,.45); padding:2px 7px; border-radius:4px; z-index:5;}
+  .real-map-marker{
+    position:absolute; width:12px; height:12px; margin:-6px 0 0 -6px; padding:0; border:none; cursor:pointer;
+    background:var(--accent); transform:rotate(45deg); box-shadow:0 0 0 2px rgba(0,0,0,.55), 0 0 10px 1px var(--accent); z-index:4;
+  }
+  .real-map-marker.boss{background:var(--danger); box-shadow:0 0 0 2px rgba(0,0,0,.55), 0 0 10px 1px var(--danger);}
+  .real-map-marker.active{width:17px; height:17px; margin:-8.5px 0 0 -8.5px; box-shadow:0 0 0 2px rgba(0,0,0,.6), 0 0 16px 4px var(--accent-strong);}
+  .real-map-marker.active.boss{box-shadow:0 0 0 2px rgba(0,0,0,.6), 0 0 16px 4px var(--danger-strong);}
+  .real-map-label{position:absolute; transform:translateX(-50%); font-size:.68rem; color:#fff; background:rgba(0,0,0,.6); padding:2px 8px; border-radius:4px; white-space:nowrap; z-index:4; pointer-events:none;}
   .modal-grid{display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:14px;}
   @media (max-width:520px){.modal-grid{grid-template-columns:1fr;}}
   .coord-box{
@@ -726,7 +737,11 @@
       </div>
       <button class="modal-close" id="modalClose" aria-label="Fechar mapa">✕</button>
     </div>
-    <div class="map-canvas-wrap"><canvas id="modalCanvas" width="640" height="280"></canvas></div>
+    <div class="real-map-wrap" id="realMapWrap" style="display:none;">
+      <div class="real-map-view" id="realMapView"></div>
+      <div class="real-map-attrib">mapa real: tibiamaps.io / tibia-map-data (MIT)</div>
+    </div>
+    <div class="map-canvas-wrap" id="canvasWrap"><canvas id="modalCanvas" width="640" height="280"></canvas></div>
     <div class="floor-tabs" id="modalFloors"></div>
     <div class="legend" id="modalLegend"></div>
     <div class="modal-grid" id="modalCoords"></div>
@@ -919,11 +934,11 @@
   };
 
   var WASTELAND_POINTS = [
-    {key:'shrineBlue', label:'Azul', x:33927,y:31091},
-    {key:'shrineOrange', label:'Laranja', x:33970,y:30988},
-    {key:'shrinePink', label:'Rosa', x:33971,y:31012},
-    {key:'shrineGreen', label:'Verde', x:33963,y:31078},
-    {key:'hatredRoom', label:'Boss', x:33914,y:31034, boss:true}
+    {key:'shrineBlue', label:'Azul', x:33927,y:31091, z:13},
+    {key:'shrineOrange', label:'Laranja', x:33970,y:30988, z:13},
+    {key:'shrinePink', label:'Rosa', x:33971,y:31012, z:13},
+    {key:'shrineGreen', label:'Verde', x:33963,y:31078, z:13},
+    {key:'hatredRoom', label:'Boss', x:33914,y:31034, z:12, boss:true}
   ];
 
   function coordStr(c){ return c ? (c[0]+', '+c[1]+', z'+c[2]) : '— (sem coordenadas oficiais)'; }
@@ -975,8 +990,82 @@
   var modalLegend = document.getElementById('modalLegend');
   var modalCoords = document.getElementById('modalCoords');
   var modalFloors = document.getElementById('modalFloors');
+  var realMapWrap = document.getElementById('realMapWrap');
+  var realMapView = document.getElementById('realMapView');
+  var canvasWrap = document.getElementById('canvasWrap');
   var lastFocused = null;
   var rafId = null;
+  var currentModalKey = null;
+
+  // Real minimap tiles from the tibiamaps.io / tibiamaps/tibia-map-data community project (MIT licensed),
+  // extracted from the official game client and meant for reuse by third-party map tools like this one.
+  function realTileUrl(tx,ty,z){
+    return 'https://tibiamaps.github.io/tibia-map-data/mapper/Minimap_Color_' + tx + '_' + ty + '_' + z + '.png';
+  }
+
+  function renderRealMap(container, points, activeKey, onPick){
+    var TILE = 256, zoom = 2.2;
+    var active = points.find(function(p){ return p.key === activeKey; }) || points[0];
+    var gridOriginX = Math.floor(active.x / TILE) * TILE - TILE;
+    var gridOriginY = Math.floor(active.y / TILE) * TILE - TILE;
+    container.innerHTML = '';
+
+    var wrapper = document.createElement('div');
+    wrapper.style.cssText = 'position:absolute;left:0;top:0;width:' + (TILE*3) + 'px;height:' + (TILE*3) + 'px;image-rendering:pixelated;';
+
+    // Only the center tile (row 1, col 1) actually contains our point — if that one fails
+    // (network blocked, e.g. inside the Claude Artifact sandbox) fall back to the stylized diagram.
+    // Neighbor tiles can legitimately be missing (map edge / unexplored void) — just hide those quietly.
+    for(var row=0; row<3; row++){
+      for(var col=0; col<3; col++){
+        var tx = gridOriginX + col*TILE, ty = gridOriginY + row*TILE;
+        var isCenter = (row===1 && col===1);
+        var img = new Image();
+        img.width = TILE; img.height = TILE;
+        img.style.cssText = 'position:absolute; left:' + (col*TILE) + 'px; top:' + (row*TILE) + 'px; image-rendering:pixelated;';
+        img.alt = '';
+        (function(img, isCenter){
+          img.onerror = function(){
+            if(isCenter){
+              realMapWrap.style.display = 'none';
+              canvasWrap.style.display = '';
+              renderModalCanvas(currentModalKey, activeKey);
+            } else {
+              img.style.visibility = 'hidden';
+            }
+          };
+        })(img, isCenter);
+        img.src = realTileUrl(tx, ty, active.z);
+        wrapper.appendChild(img);
+      }
+    }
+    container.appendChild(wrapper);
+
+    var viewW = container.clientWidth || 640, viewH = container.clientHeight || 280;
+    wrapper.style.transformOrigin = '0 0';
+    wrapper.style.transform = 'translate(' + (viewW/2 - (active.x - gridOriginX)*zoom) + 'px,' + (viewH/2 - (active.y - gridOriginY)*zoom) + 'px) scale(' + zoom + ')';
+
+    points.forEach(function(p){
+      if(p.z !== active.z) return; // different floor than the one currently shown — don't plot a misleading marker
+      var isActive = p.key === activeKey;
+      var px = viewW/2 + (p.x - active.x)*zoom;
+      var py = viewH/2 + (p.y - active.y)*zoom;
+      var marker = document.createElement('button');
+      marker.type = 'button';
+      marker.className = 'real-map-marker' + (p.boss ? ' boss' : '') + (isActive ? ' active' : '');
+      marker.style.left = px + 'px'; marker.style.top = py + 'px';
+      marker.title = p.label;
+      marker.setAttribute('aria-label', p.label);
+      if(onPick) marker.addEventListener('click', function(){ onPick(p.key); });
+      container.appendChild(marker);
+      var lbl = document.createElement('div');
+      lbl.className = 'real-map-label';
+      lbl.style.left = px + 'px'; lbl.style.top = (py + 12) + 'px';
+      lbl.style.opacity = isActive ? '1' : '.65';
+      lbl.textContent = p.label;
+      container.appendChild(lbl);
+    });
+  }
 
   function renderModalCanvas(key, activeKey){
     var loc = LOC[key];
@@ -1022,45 +1111,52 @@
 
   function openModal(key){
     var loc = LOC[key]; if(!loc) return;
+    currentModalKey = key;
     lastFocused = document.activeElement;
     modalTitle.textContent = loc.label;
-    var subNote = loc.kind==='cluster' ? ' · mapa em escala com coordenadas reais' : (loc.coords ? ' · coordenadas reais, diagrama ilustrativo' : ' · diagrama estilizado (sem coordenadas oficiais)');
+    var hasRealMap = (loc.kind==='cluster') || !!loc.coords;
+    var subNote = loc.kind==='cluster' ? ' · mapa real em escala, coordenadas oficiais' : (loc.coords ? ' · mapa real, coordenadas oficiais' : ' · diagrama estilizado (sem coordenadas oficiais)');
     modalSub.textContent = 'Andar ' + loc.floor + subNote;
     modalDesc.textContent = loc.desc;
     modalLegend.innerHTML = '';
     modalCoords.innerHTML = '';
     modalFloors.innerHTML = '';
+    realMapWrap.style.display = hasRealMap ? '' : 'none';
+    canvasWrap.style.display = hasRealMap ? 'none' : '';
 
     if(loc.kind==='cluster'){
+      var selectWastelandPoint = function(pointKey){
+        modalLegend.querySelectorAll('button').forEach(function(x){ x.classList.toggle('active', x.dataset.key===pointKey); });
+        renderRealMap(realMapView, WASTELAND_POINTS, pointKey, selectWastelandPoint);
+        var pointLoc = LOC[pointKey];
+        if(pointLoc){
+          modalTitle.textContent = pointLoc.label;
+          modalDesc.textContent = pointLoc.desc;
+          modalSub.textContent = 'Andar ' + pointLoc.floor + ' · mapa real em escala, coordenadas oficiais';
+          modalCoords.innerHTML = '';
+          buildCoordBox(modalCoords, 'Coordenadas', pointLoc.coords);
+        }
+      };
       WASTELAND_POINTS.forEach(function(p){
         var b = document.createElement('button');
+        b.dataset.key = p.key;
         b.className = (p.key===key) ? 'active' : '';
         var sw = document.createElement('span'); sw.className='sw';
         sw.style.background = p.boss ? cssVar('--danger') : cssVar('--accent');
         b.appendChild(sw);
         b.appendChild(document.createTextNode(p.label));
-        b.addEventListener('click', function(){
-          modalLegend.querySelectorAll('button').forEach(function(x){x.classList.remove('active');});
-          b.classList.add('active');
-          renderModalCanvas(key, p.key);
-          var pointLoc = LOC[p.key];
-          modalTitle.textContent = pointLoc ? pointLoc.label : p.label;
-          modalDesc.textContent = pointLoc ? pointLoc.desc : '';
-          if(pointLoc){
-            modalSub.textContent = 'Andar ' + pointLoc.floor + ' · mapa em escala com coordenadas reais';
-            modalCoords.innerHTML = '';
-            buildCoordBox(modalCoords, 'Coordenadas', pointLoc.coords);
-          }
-        });
+        b.addEventListener('click', function(){ selectWastelandPoint(this.dataset.key); });
         modalLegend.appendChild(b);
       });
-      buildCoordBox(modalCoords, 'Coordenadas', loc.coords);
+      selectWastelandPoint(key);
     } else if(loc.coords){
       buildCoordBox(modalCoords, 'Coordenadas', loc.coords);
+      renderRealMap(realMapView, [{key:key, label:loc.label, x:loc.coords[0], y:loc.coords[1], z:loc.coords[2]}], key, null);
     } else {
       var note = document.createElement('div'); note.className='coord-box';
       note.innerHTML = '<span class="mono">Este ponto não tem coordenadas públicas confirmadas — o diagrama acima é apenas ilustrativo.</span>';
       modalCoords.appendChild(note);
+      renderModalCanvas(key, key);
     }
 
     if(key==='crater' || key==='crater1' || key==='crater2' || key==='crater3'){
@@ -1074,7 +1170,6 @@
       });
     }
 
-    renderModalCanvas(key, key);
     scrim.classList.add('show');
     document.body.style.overflow='hidden';
     document.getElementById('modalClose').focus();
